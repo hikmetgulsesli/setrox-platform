@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HealthLens - Fotoğraf çekerek yemeğinizin kalori, makro ve mikro besin değerlerini yapay zeka ile anında analiz edin." />
+  <meta name="keywords" content="besin analizi, kalori takibi, diyet, yapay zeka, tansiyon, diyabet" />
+  <meta property="og:title" content="HealthLens — Yapay Zeka Odaklı Klinik Beslenme Asistanı" />
+  <meta property="og:description" content="Tabağınızı fotoğraflayın, sağlığınızı yönetin. Klinik hedeflerinize göre kalibre edilmiş beslenme asistanı." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://lens.setrox.com.tr/" />
+  <title>HealthLens — Yapay Zeka Odaklı Klinik Beslenme Asistanı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F172A; --bg-2: #020617;
+      --surface: #1E293B; --surface-hi: #334155;
+      --text: #F1F5F9; --text-muted: #94A3B8;
+      --primary: #14B8A6; --primary-dark: #0D9488; --primary-glow: rgba(20, 184, 166, 0.3);
+      --accent: #0EA5E9; --danger: #EF4444; --success: #10B981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; overflow-x: hidden; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Ambient orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.4; z-index: 0; pointer-events: none; }
+    .orb-1 { top: -200px; right: -100px; width: 500px; height: 500px; background: var(--primary); }
+    .orb-2 { bottom: -200px; left: -100px; width: 500px; height: 500px; background: var(--accent); }
+
+    /* Navbar */
+    nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.7); border-bottom: 1px solid rgba(148, 163, 184, 0.1); padding: 1rem 0; }
+    .nav-flex { display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+    .logo .material-icons { font-size: 1.75rem; }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-cta { background: var(--primary); color: white !important; padding: 0.5rem 1.25rem; border-radius: 0.5rem; font-weight: 600 !important; }
+
+    /* Hero */
+    .hero { position: relative; padding: 5rem 0 6rem; text-align: center; }
+    .badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(20, 184, 166, 0.3); color: var(--primary); padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .badge .material-icons { font-size: 1.1rem; }
+    h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1.05; margin-bottom: 1.5rem; letter-spacing: -0.03em; }
+    h1 .glow { background: linear-gradient(135deg, #14B8A6 0%, #0EA5E9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .subtitle { font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 2.5rem; }
+
+    /* Download badges */
+    .download { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+    .download a { display: inline-flex; align-items: center; gap: 0.75rem; background: var(--surface); border: 1px solid rgba(148, 163, 184, 0.2); color: var(--text); padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; transition: all 0.2s; }
+    .download a:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .download .material-icons { font-size: 2rem; color: var(--primary); }
+    .download .text { display: flex; flex-direction: column; line-height: 1.2; }
+    .download .text small { font-size: 0.7rem; color: var(--text-muted); }
+    .download .text strong { font-size: 0.95rem; font-weight: 600; }
+
+    /* Sections */
+    section { position: relative; padding: 5rem 0; }
+    h2 { font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; text-align: center; margin-bottom: 1rem; letter-spacing: -0.02em; }
+    .section-sub { text-align: center; color: var(--text-muted); max-width: 600px; margin: 0 auto 3rem; font-size: 1.05rem; }
+
+    /* Features */
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .feature { background: var(--surface); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 1rem; padding: 2rem; }
+    .feature .icon { width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-glow); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+    .feature .icon .material-icons { color: var(--primary); font-size: 1.5rem; }
+    .feature h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature p { color: var(--text-muted); font-size: 0.95rem; }
+
+    /* How it works */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto; }
+    .step { text-align: center; }
+    .step .num { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin: 0 auto 1rem; font-family: 'Outfit', sans-serif; }
+    .step h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .step p { color: var(--text-muted); font-size: 0.95rem; }
+
+    /* Pricing */
+    .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .price-card { background: var(--surface); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 1rem; padding: 2.5rem 2rem; position: relative; }
+    .price-card.featured { border-color: var(--primary); }
+    .price-card .ribbon { position: absolute; top: -12px; right: 1.5rem; background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .price-card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .price-card .price { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 1rem 0; }
+    .price-card .price small { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+    .price-card ul { list-style: none; margin: 1.5rem 0; }
+    .price-card li { padding: 0.5rem 0; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+    .price-card li::before { content: '✓'; color: var(--primary); font-weight: 700; }
+    .price-card .btn { display: block; text-align: center; background: var(--primary); color: white; padding: 0.875rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600; margin-top: 1.5rem; }
+    .price-card .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+
+    /* Privacy */
+    .privacy { background: var(--surface); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 1rem; padding: 2.5rem; max-width: 800px; margin: 0 auto; }
+    .privacy p { color: var(--text-muted); margin-bottom: 1rem; }
+
+    /* Footer */
+    footer { padding: 3rem 0 2rem; border-top: 1px solid rgba(148, 163, 184, 0.1); margin-top: 4rem; }
+    .footer-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--text-muted); font-size: 0.875rem; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .nav-links a:not(.btn-cta) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <div class="container nav-flex">
+      <div class="logo">
+        <span class="material-icons">psychology</span>
+        HealthLens
+      </div>
+      <div class="nav-links">
+        <a href="#features">Özellikler</a>
+        <a href="#how">Nasıl Çalışır</a>
+        <a href="#privacy">Gizlilik</a>
+        <a href="#download" class="btn-cta">İndir</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="badge">
+        <span class="material-icons">verified</span>
+        KLİNİK HEDEF ODAKLI YAPAY ZEKA
+      </div>
+      <h1>Yemeklerinizi Fotoğraflayın,<br/><span class="glow">Sağlığınızı</span> Yönetin.</h1>
+      <p class="subtitle">HealthLens, tabaklarınızı tek bir fotoğrafla saniyeler içinde analiz eder. Şeker, sodyum ve lif alımınızı klinik hedeflerinize (Diyabet, Tansiyon, Sindirim) göre otomatik kalibre eder.</p>
+      <div class="download" id="download">
+        <a href="#" aria-label="App Store">
+          <span class="material-icons">apple</span>
+          <div class="text"><small>App Store'dan</small><strong>İndirin</strong></div>
+        </a>
+        <a href="#" aria-label="Google Play">
+          <span class="material-icons">android</span>
+          <div class="text"><small>Google Play'den</small><strong>Alın</strong></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <h2>Özellikler</h2>
+      <p class="section-sub">Sağlık hedeflerinize özel tasarlanmış akıllı beslenme asistanı.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="icon"><span class="material-icons">photo_camera</span></div>
+          <h3>Tek Fotoğraf Yeterli</h3>
+          <p>Yemeğinizin fotoğrafını çekin, gerisini HealthLens halletsin. Porsiyon, kalori, makro ve mikro besinler saniyeler içinde.</p>
+        </div>
+        <div class="feature">
+          <div class="icon"><span class="material-icons">favorite</span></div>
+          <h3>Klinik Hedef Odaklı</h3>
+          <p>Tansiyon, diyabet, bağırsak sağlığı veya kilo yönetimi hedeflerinize göre sodyum, şeker ve lif alarm katsayıları otomatik ayarlanır.</p>
+        </div>
+        <div class="feature">
+          <div class="icon"><span class="material-icons">water_drop</span></div>
+          <h3>Su Takibi</h3>
+          <p>Günlük su tüketiminizi kaydedin. Dalga animasyonlu su kartı ile hedefinize ne kadar yakın olduğunuzu görün.</p>
+        </div>
+        <div class="feature">
+          <div class="icon"><span class="material-icons">insights</span></div>
+          <h3>Akıllı İçgörüler</h3>
+          <p>Her öğün için klinik tavsiye: yüksek sodyumda potasyum önerisi, fazla proteinde övgü, yüksek şekerde nazik uyarı.</p>
+        </div>
+        <div class="feature">
+          <div class="icon"><span class="material-icons">grade</span></div>
+          <h3>A+ → D Puanlama</h3>
+          <p>Her yemeğe klinik bir sağlık notu: Süper Gıda, Besleyici, Dengeli, Kontrollü, Boş Kalori.</p>
+        </div>
+        <div class="feature">
+          <div class="icon"><span class="material-icons">cloud_off</span></div>
+          <h3>Çevrimdışı Çalışır</h3>
+          <p>İnternet olmasa bile verileriniz kaydedilir, bağlantı gelince otomatik senkronize olur.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="background: rgba(30, 41, 59, 0.3);">
+    <div class="container">
+      <h2>Nasıl Çalışır?</h2>
+      <p class="section-sub">3 basit adımda sağlıklı beslenme takibi.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Fotoğrafını Çek</h3>
+          <p>Yemeğinizin fotoğrafını çekin veya galeriden seçin.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Yapay Zeka Analiz Etsin</h3>
+          <p>Gemini + Multi-AI Ensemble ile saniyeler içinde detaylı besin analizi.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Takip Et & Geliş</h3>
+          <p>Günlük öğünleri kaydedin, hedeflerinize ulaşın.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>Fiyatlandırma</h2>
+      <p class="section-sub">Ücretsiz başlayın, istediğiniz zaman Pro'ya geçin.</p>
+      <div class="pricing">
+        <div class="price-card">
+          <h3>Ücretsiz</h3>
+          <div class="price">₺0<small>/sonsuz</small></div>
+          <ul>
+            <li>5 AI tarama / gün</li>
+            <li>Temel makro takibi</li>
+            <li>Geçmiş 7 gün</li>
+            <li>Su takibi</li>
+          </ul>
+          <a href="#download" class="btn btn-outline">İndir</a>
+        </div>
+        <div class="price-card featured">
+          <span class="ribbon">EN POPÜLER</span>
+          <h3>Pro</h3>
+          <div class="price">₺99<small>/ay</small></div>
+          <ul>
+            <li>Sınırsız AI tarama</li>
+            <li>Klinik hedef odaklı alarmlar</li>
+            <li>Sınırsız geçmiş</li>
+            <li>Bulut senkronizasyon</li>
+            <li>PDF diyetisyen raporları</li>
+            <li>Öncelikli destek</li>
+          </ul>
+          <a href="#download" class="btn">Pro'ya Geç</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="container">
+      <h2>Gizlilik</h2>
+      <div class="privacy">
+        <p><strong>Verileriniz size aittir.</strong> Tüm beslenme verileriniz cihazınızda şifreli olarak saklanır. Hiçbir veri reklam amacıyla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
+        <p>Yemek tanıma özelliğini kullandığınızda, çektiğiniz veya galeriden yüklediğiniz fotoğraflar besin analizi yapılması amacıyla güvenli HTTPS protokolü üzerinden yapay zeka servisine (Gemini / Claude API) gönderilir. Bu fotoğraflar hiçbir şekilde reklam amaçlı kullanılmaz, üçüncü şahıslarla paylaşılmaz ve analiz tamamlandıktan sonra sunucu belleklerinden güvenle silinir.</p>
+        <p>Hesabınızı dilediğiniz zaman silebilirsiniz. Tüm verileriniz anında silinir.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-flex">
+      <div>© 2026 Setrox · HealthLens</div>
+      <div class="footer-links">
+        <a href="#privacy">Gizlilik</a>
+        <a href="https://github.com/setrox">GitHub</a>
+        <a href="mailto:hello@setrox.com.tr">İletişim</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

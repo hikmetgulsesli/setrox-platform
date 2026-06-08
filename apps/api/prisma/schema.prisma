@@ -1,0 +1,308 @@
+// Setrox Platform - Multi-tenant AI API Gateway
+// Manages multiple applications (e.g. HealthLens), each with its own users,
+// AI provider configurations, and usage tracking.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================
+// AI Providers
+// =============================================================
+
+enum ProviderType {
+  vision
+  text
+  both
+}
+
+model AIProvider {
+  id           String       @id @default(cuid())
+  slug         String       @unique // "gemini-flash", "kimi-k2", "minimax-m2"
+  displayName  String       // "Gemini 1.5 Flash"
+  type         ProviderType
+  // Encrypted API key (AES-256-GCM via ENCRYPTION_KEY env)
+  apiKeyCipher String       @db.Text
+  baseUrl      String?
+  isEnabled    Boolean      @default(true)
+  // Lower number = higher priority (used first)
+  priority     Int          @default(100)
+  // USD per 1k tokens (used for cost tracking)
+  costPer1kInput  Decimal   @default(0) @db.Decimal(10, 6)
+  costPer1kOutput Decimal   @default(0) @db.Decimal(10, 6)
+  // Provider-specific config (model name, max tokens, etc.)
+  config       Json?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  appConfigs   AppProviderConfig[]
+  usageLogs    AIUsageLog[]
+
+  @@index([isEnabled, priority])
+}
+
+// =============================================================
+// Applications (e.g. HealthLens, future apps)
+// =============================================================
+
+model Application {
+  id              String   @id @default(cuid())
+  slug            String   @unique // "healthlens"
+  name            String   // "HealthLens"
+  description     String?
+  // App's internal API key (used by client apps to authenticate)
+  apiKey          String   @unique
+  isActive        Boolean  @default(true)
+  // Quota per plan tier (daily AI analyses)
+  freeQuotaPerDay Int      @default(3)   // tightened from 5 → 3 for better conversion
+  proQuotaPerDay  Int      @default(100) // pro tier soft limit (analytics/abuse guard)
+  // System prompt template (providers fill in app-specific data)
+  defaultSystemPrompt String? @db.Text
+  // Pricing in cents (USD) — admin can override per app
+  priceMonthlyCents  Int @default(499)   // $4.99
+  priceYearlyCents   Int @default(5999)  // $59.99
+  priceProPlusMonthlyCents Int @default(999) // $9.99
+  priceProPlusYearlyCents  Int @default(11999) // $119.99
+  trialDays          Int @default(7)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  configs   AppProviderConfig[]
+  users     AppUser[]
+  usageLogs AIUsageLog[]
+  subscriptions Subscription[]
+
+  @@index([isActive])
+}
+
+// =============================================================
+// Per-app provider overrides
+// =============================================================
+
+model AppProviderConfig {
+  id            String      @id @default(cuid())
+  applicationId String
+  providerId    String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  provider      AIProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  isEnabled     Boolean     @default(true)
+  priority      Int         @default(100)
+  maxTokens     Int?
+  systemPrompt  String?     @db.Text
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([applicationId, providerId])
+  @@index([applicationId, isEnabled])
+}
+
+// =============================================================
+// End-users of each application
+// =============================================================
+
+model AppUser {
+  id              String      @id @default(cuid())
+  applicationId   String
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  // The user id from the client app (e.g. HealthLens internal user id)
+  externalUserId  String
+  email           String?
+  displayName     String?
+  // Password hash for email/password auth (null for OAuth-only users)
+  passwordHash    String?
+  // Plan tier: free (default), pro, pro_plus
+  plan            String      @default("free")
+  // Kept for backward compatibility. true when plan != 'free'
+  isPremium       Boolean     @default(false)
+  // Trial info
+  trialEndsAt     DateTime?
+  // Per-user override of daily quota (null = use app default for plan)
+  dailyQuota      Int?
+  metadata        Json?
+  lastSeenAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  refreshTokens RefreshToken[]
+  usageLogs     AIUsageLog[]
+  subscriptions Subscription[]
+  logs          Log[]
+  hydrationDays HydrationDay[]
+
+  @@unique([applicationId, externalUserId])
+  @@index([applicationId, email])
+  @@index([applicationId, plan])
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  appUserId   String
+  appUser     AppUser  @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([appUserId])
+}
+
+// =============================================================
+// Subscriptions (Apple App Store / Google Play receipts)
+// =============================================================
+
+enum SubscriptionPlatform {
+  ios
+  android
+  web
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  expired
+  trial
+  paused
+}
+
+model Subscription {
+  id            String              @id @default(cuid())
+  appUserId     String
+  appUser       AppUser             @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  applicationId String
+  application   Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  platform      SubscriptionPlatform
+  productId     String              // "pro_monthly", "pro_yearly", "pro_plus_monthly", "pro_plus_yearly"
+  status        SubscriptionStatus
+  // For Apple: original_transaction_id. For Google: purchase token
+  originalId    String              @unique
+  // Last verified receipt (encrypted; we re-verify periodically)
+  receiptCipher String?             @db.Text
+  startsAt      DateTime
+  expiresAt     DateTime
+  cancelledAt   DateTime?
+  // Auto-renew status (Apple/Google)
+  autoRenew     Boolean             @default(true)
+  // Provider environment: production or sandbox
+  environment   String              @default("production")
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([appUserId, status])
+  @@index([applicationId, status])
+  @@index([expiresAt])
+}
+
+// =============================================================
+// Usage logs (analytics + cost tracking)
+// =============================================================
+
+enum AIRequestType {
+  image
+  text
+}
+
+model AIUsageLog {
+  id            String        @id @default(cuid())
+  applicationId String
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  providerId    String
+  provider      AIProvider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  appUserId     String?
+  appUser       AppUser?      @relation(fields: [appUserId], references: [id], onDelete: SetNull)
+  type          AIRequestType
+  inputTokens   Int           @default(0)
+  outputTokens  Int           @default(0)
+  costUsd       Decimal       @default(0) @db.Decimal(10, 6)
+  latencyMs     Int           @default(0)
+  success       Boolean       @default(true)
+  errorCode     String?
+  errorMessage  String?
+  createdAt     DateTime      @default(now())
+
+  @@index([applicationId, createdAt])
+  @@index([providerId, createdAt])
+  @@index([appUserId, createdAt])
+}
+
+// =============================================================
+// Admin users (admin.setrox.com.tr operators)
+// =============================================================
+
+enum AdminRole {
+  superadmin
+  admin
+  viewer
+}
+
+// =============================================================
+// LogEntry (food log) - synced from client apps
+// =============================================================
+
+model Log {
+  id            String      @id // Client-generated UUID
+  appUserId     String
+  appUser       AppUser     @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  applicationId String
+  dateKey       String      // YYYY-MM-DD
+  mealCategory  String
+  items         Json        // FoodItem[]
+  smartInsight  String?
+  imageUris     Json?       // string[]
+  totalCalories Float       @default(0)
+  totalProtein  Float       @default(0)
+  totalCarbs    Float       @default(0)
+  totalFat      Float       @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([appUserId, dateKey])
+  @@index([applicationId, dateKey])
+}
+
+// =============================================================
+// HydrationDay
+// =============================================================
+
+model HydrationDay {
+  id            String   @id @default(cuid())
+  appUserId     String
+  appUser       AppUser  @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  applicationId String
+  dateKey       String
+  amountMl      Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  @@unique([appUserId, dateKey])
+  @@index([appUserId])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  role         AdminRole @default(admin)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  action    String   // "provider.enable", "provider.disable", "app.create", etc.
+  target    String?  // entity id
+  details   Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([adminId, createdAt])
+}

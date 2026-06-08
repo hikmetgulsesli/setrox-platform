@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Setrox - Multi-app AI platform. Yapay zeka destekli uygulamalarımızı keşfedin." />
+  <meta name="robots" content="index, follow" />
+  <title>Setrox — Yapay Zeka Destekli Uygulamalar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --primary: #14B8A6;
+      --primary-dark: #0D9488;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 0; }
+    .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
+    nav a { color: var(--text-muted); text-decoration: none; margin-left: 2rem; font-weight: 500; transition: color 0.2s; }
+    nav a:hover { color: var(--text); }
+    .hero { padding: 4rem 0 6rem; text-align: center; }
+    .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.03em; }
+    .hero h1 span { background: linear-gradient(135deg, #14B8A6 0%, #0EA5E9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 640px; margin: 0 auto 2.5rem; }
+    .cta { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: white; padding: 0.875rem 1.75rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600; transition: background 0.2s; }
+    .cta:hover { background: var(--primary-dark); }
+    .apps { padding: 3rem 0; }
+    .apps h2 { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--surface); border: 1px solid rgba(148, 163, 184, 0.12); border-radius: 1rem; padding: 2rem; text-decoration: none; color: inherit; transition: transform 0.2s, border-color 0.2s; display: block; }
+    .card:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .card .badge { display: inline-block; background: rgba(20, 184, 166, 0.15); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .card .arrow { color: var(--primary); font-weight: 600; font-size: 0.95rem; }
+    footer { padding: 3rem 0 2rem; border-top: 1px solid rgba(148, 163, 184, 0.12); margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">Setrox</div>
+      <nav>
+        <a href="#apps">Uygulamalar</a>
+        <a href="https://github.com/setrox">GitHub</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Yapay Zeka <span>Destekli</span> Uygulamalar</h1>
+      <p>Setrox ekosistemi; yapay zeka destekli, gizlilik odaklı ve modern uygulamalar geliştirir. Her biri kendi alanında uzmanlaşmış, özenle tasarlanmış deneyimler sunar.</p>
+      <a href="#apps" class="cta">Uygulamaları Keşfet →</a>
+    </section>
+
+    <section class="apps" id="apps">
+      <h2>Uygulamalarımız</h2>
+      <div class="grid">
+        <a href="/healthlens/" class="card">
+          <span class="badge">iOS · Aktif</span>
+          <h3>HealthLens</h3>
+          <p>Yemek fotoğraflarınızı analiz eden yapay zeka destekli klinik beslenme asistanı. Kalori, makro ve mikro besin takibi.</p>
+          <span class="arrow">Detaylar →</span>
+        </a>
+        <div class="card" style="opacity: 0.5; cursor: not-allowed;">
+          <span class="badge">Yakında</span>
+          <h3>Yeni Uygulama</h3>
+          <p>Setrox ekosistemi büyüyor. Yeni uygulamalar için bizi takip edin.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Setrox. Tüm hakları saklıdır.</p>
+    </footer>
+  </div>
+</body>
+</html>

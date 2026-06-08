@@ -1,0 +1,32 @@
+{
+  "name": "setrox-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Setrox Multi-App AI Platform - API Gateway, Admin Panel, Landing Pages",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "npm run db:generate -w apps/api",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:studio": "npm run db:studio -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.8.3",
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  }
+}

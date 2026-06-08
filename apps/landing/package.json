@@ -1,0 +1,20 @@
+{
+  "name": "@setrox/landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "lint": "echo 'no lint'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@setrox/shared": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^5.4.10"
+  }
+}
