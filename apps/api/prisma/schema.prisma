@@ -29,7 +29,10 @@ model AIProvider {
   // Encrypted API key (AES-256-GCM via ENCRYPTION_KEY env)
   apiKeyCipher String       @db.Text
   baseUrl      String?
-  isEnabled    Boolean      @default(true)
+  // Default disabled. Admin must explicitly enable each provider in the
+  // admin panel (and set its API key). This keeps us from accidentally
+  // burning through third-party quotas on first deploy.
+  isEnabled    Boolean      @default(false)
   // Lower number = higher priority (used first)
   priority     Int          @default(100)
   // USD per 1k tokens (used for cost tracking)

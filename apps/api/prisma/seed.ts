@@ -32,41 +32,41 @@ async function main() {
       slug: 'gemini-flash',
       displayName: 'Gemini 2.0 Flash',
       type: 'both' as const,
-      priority: 10,
+      priority: 50,
       costPer1kInput: 0.000075,
       costPer1kOutput: 0.0003,
       config: { model: 'gemini-2.0-flash' },
-      notes: 'Fast & cheap. Default for free tier.',
+      notes: 'Google-backed. Disabled by default — opt-in via admin panel.',
     },
     {
       slug: 'gemini-pro',
       displayName: 'Gemini 2.5 Pro',
       type: 'both' as const,
-      priority: 20,
+      priority: 60,
       costPer1kInput: 0.00125,
       costPer1kOutput: 0.005,
       config: { model: 'gemini-2.5-pro' },
-      notes: 'Higher quality. Recommended for premium tier.',
+      notes: 'Google-backed. Disabled by default — opt-in via admin panel.',
     },
     {
       slug: 'kimi',
       displayName: 'Kimi K2',
       type: 'both' as const,
-      priority: 30,
+      priority: 10,
       costPer1kInput: 0.001,
       costPer1kOutput: 0.003,
       config: { model: 'kimi-k2', baseUrl: 'https://api.kimi.com/coding/v1' },
-      notes: 'Moonshot AI. Multimodal, strong reasoning.',
+      notes: 'First-party provider (Moonshot AI). Enabled by default.',
     },
     {
       slug: 'minimax',
       displayName: 'MiniMax M2',
       type: 'both' as const,
-      priority: 40,
+      priority: 20,
       costPer1kInput: 0.0005,
       costPer1kOutput: 0.002,
       config: { model: 'MiniMax-M2', baseUrl: 'https://api.minimax.io/v1' },
-      notes: 'OpenAI-compatible API. Fast.',
+      notes: 'First-party provider (MiniMax). Enabled by default.',
     },
   ];
 
@@ -117,21 +117,25 @@ async function main() {
   console.log(`   API Key: ${apiKey}`);
   console.log(`   Plans: Free 3/day · Pro $4.99/mo · Pro+ $9.99/mo · 7-day trial`);
 
-  // 4. Enable all providers for HealthLens by default (admin can configure)
+  // 4. Enable only first-party providers by default (Kimi + MiniMax).
+  // Gemini is Google-backed — we don't promote it by default to keep economics in our favor.
+  // Admin can enable Gemini via the admin panel if they want a fallback.
+  const FIRST_PARTY_PROVIDERS = ['kimi', 'minimax'];
   const allProviders = await prisma.aIProvider.findMany();
   for (const provider of allProviders) {
+    const isFirstParty = FIRST_PARTY_PROVIDERS.includes(provider.slug);
     await prisma.appProviderConfig.upsert({
       where: { applicationId_providerId: { applicationId: app.id, providerId: provider.id } },
       update: {},
       create: {
         applicationId: app.id,
         providerId: provider.id,
-        isEnabled: true, // Will fall back if no API key set
+        isEnabled: isFirstParty, // Only Kimi + MiniMax on by default
         priority: provider.priority,
       },
     });
   }
-  console.log('✅ Default app-provider configs created');
+  console.log('✅ Default app-provider configs created (first-party only)');
 
   console.log('\n🎉 Seed complete!');
   console.log('\n⚠️  IMPORTANT:');
